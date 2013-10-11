@@ -35,3 +35,9 @@ def monitor(bot, input):
     print "Sending monitor request: %s" % (parts[1],)
     bot.write_packet(hon.packets.ID.HON_CS_MONITOR, parts[1])
 monitor.commands = ['monitor']
+
+def friend(bot, input):
+    parts = input.split()
+    print "Sending friend request: %s" % (parts[1],)
+    bot.write_packet(hon.packets.ID.HON_CS_BUDDY_ADD_NOTIFY, parts[1])
+friend.commands = ['friend']

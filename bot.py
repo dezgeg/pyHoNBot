@@ -5,6 +5,7 @@
 """
 """
 
+import json
 import os, imp, sys,threading,inspect
 import re, struct
 import socket, asyncore, asynchat
@@ -122,6 +123,8 @@ class Bot( asynchat.async_chat ):
         if 'ip' not in auth_data or 'auth_hash' not in auth_data:
             print("Login Failure")
             return False
+        # print json.dumps(auth_data, indent=4)
+
         self.ip = auth_data['ip']
         self.cookie = auth_data['cookie']
         self.account_id = int(auth_data['account_id'])

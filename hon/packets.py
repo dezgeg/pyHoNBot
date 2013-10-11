@@ -190,6 +190,7 @@ def parse_pm(packet_id,data):
 chat_packets = [ID.HON_SC_PM,ID.HON_SC_WHISPER,ID.HON_SC_CHANNEL_MSG,ID.HON_SC_CHANNEL_ROLL,ID.HON_SC_CHANNEL_EMOTE]
 cs_structs = {
         ID.HON_CS_AUTH_INFO : 'IsssIIBIIsI',
+        ID.HON_CS_BUDDY_ADD_NOTIFY : 's',
         ID.HON_CS_PONG      : '',
         ID.HON_CS_JOIN_CHANNEL : 's',
         ID.HON_CS_PM : 'ss',
