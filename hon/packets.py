@@ -55,6 +55,7 @@ class ID:
     HON_CS_INVITE_TO_MM = 0x0C0D
     HON_CS_KICK_FROM_MM = 0x0D00
     HON_CS_GLOBAL_MESSAGE = 0x39
+    HON_CS_MONITOR = 0x00B5
 
     #- Server -> Client
     HON_SC_AUTH_ACCEPTED = 0x1c00
@@ -108,6 +109,7 @@ class ID:
     HON_SC_NOTIFICATION = 0xB4
     HON_SC_TMM_GROUP_JOIN = 0xC0E
     HON_SC_TMM_GROUP_CHANGE = 0xD03
+    HON_SC_MONITOR = 0x00B5
 
 
 FILTER=''.join([(len(repr(chr(x)))==3) and chr(x) or '.' for x in range(256)])
@@ -216,6 +218,7 @@ cs_structs = {
         ID.HON_CS_GLOBAL_MESSAGE : 's',
         ID.HON_CS_CLAN_REMOVE_MEMBER : 'I',
         ID.HON_CS_KICK_FROM_MM : 'B',
+        ID.HON_CS_MONITOR : 's',
         }
 sc_structs = {
         ID.HON_SC_PING : '',
@@ -238,7 +241,8 @@ sc_structs = {
         ID.HON_SC_USER_INFO_OFFLINE : 'ss',
         ID.HON_SC_USER_INFO_IN_GAME : 'sss',
         ID.HON_SC_CHANNEL_PROMOTE : 'III',
-        ID.HON_SC_CHANNEL_DEMOTE : 'III'
+        ID.HON_SC_CHANNEL_DEMOTE : 'III',
+        ID.HON_SC_MONITOR : 'ssscccssss' + 's' * 10,
         }
 def pack(packet_id, *args):
     args = list(args)
@@ -287,9 +291,9 @@ def parse_packet(data):
                 data = data[2]
             else:
                 data = data[1]
-    #else:
-        #print 'unknown packet'
-        #print(origin)
-        #print(dump(data))
+    else:
+        print 'unknown packet'
+        print(origin)
+        print(dump(data))
     #except:pass
     return origin,data

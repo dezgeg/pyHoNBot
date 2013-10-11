@@ -2,6 +2,7 @@ import json
 import zmq
 import traceback
 from hon.packets import ID, sc_structs
+import hon.packets
 
 try:
     context = zmq.Context()
@@ -28,3 +29,9 @@ events.priority = 'low'
 eventStrings = {}
 for k in dir(ID):
     eventStrings[getattr(ID, k)] = k
+
+def monitor(bot, input):
+    parts = input.split()
+    print "Sending monitor request: %s" % (parts[1],)
+    bot.write_packet(hon.packets.ID.HON_CS_MONITOR, parts[1])
+monitor.commands = ['monitor']
