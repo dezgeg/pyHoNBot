@@ -28,14 +28,14 @@ def handler(connection, event):
 ircBot = HonIrcBot()
 ircBot.ircobj.add_global_handler('all_raw_messages', handler, 0)
 print "Connecting..."
-ircBot.connect('irc.cc.tut.fi', 6667, 'NavettaBot-')
+ircBot.connect('irc.cs.hut.fi', 6667, 'NavettaBot-')
 ircConn = ircBot.connection
 
-def ircMsg(conn, msg):
+def ircMsg(msg):
     try:
-        conn.privmsg(IRC_CHAN, msg[0:100])
+        ircConn.privmsg(IRC_CHAN, msg[0:200])
     except irc.client.MessageTooLong:
-        conn.privmsg(IRC_CHAN, "Message too long.")
+        print ("********** Message too long", len(msg), msg)
 
 def threadFunc():
     print "IRC thread starting"
@@ -54,14 +54,24 @@ sock = context.socket(zmq.SUB)
 sock.setsockopt(zmq.SUBSCRIBE, '')
 sock.connect('tcp://127.0.0.1:25892')
 
-UNINTERESTING = 'HON_SC_PING HON_SC_TOTAL_ONLINE HON_SC_UPDATE_STATUS HON_SC_INITIAL_STATUS'.split()
 CHANNEL = 'tkt'
 
 users = {}
 inMatch = {}
 channelId = None
 
-def recalculate(conn):
+latestStatusMsg = None
+def timerFunc():
+    global latestStatusMsg
+    print latestStatusMsg
+    try:
+        ircConn.notice(IRC_CHAN, latestStatusMsg[0:200])
+    except irc.client.MessageTooLong:
+        print ("********** Message too long", len(msg), msg)
+noticeTimer = threading.Timer(2, timerFunc)
+
+def recalculate():
+    global latestStatusMsg, noticeTimer
     notInMatch = []
     matchDict = {}
     for id, username in users.iteritems():
@@ -75,50 +85,52 @@ def recalculate(conn):
 
     matchStr = ' '.join([players[0] if len(players) == 1 else '(' + ' '.join(players) + ')' for id, players in matchDict.iteritems()])
     msg = 'Lobby: %s | In-game: %s' % (' '.join(notInMatch), matchStr)
-    print (msg, users, inMatch)
-    conn.notice(IRC_CHAN, msg)
+
+    if msg != latestStatusMsg:
+        print "Start timer"
+        noticeTimer.cancel()
+        noticeTimer = threading.Timer(2, timerFunc)
+        latestStatusMsg = msg
+        noticeTimer.start()
 
 while True:
     sender, message = json.loads(sock.recv())
-    # ircMsg(ircConn, json.dumps(message))
+    # ircMsg(json.dumps(message))
     if message[0] == "HON_STATUS_INLOBBY":
         if message[1] != CHANNEL:
             continue
 
         users = {}
+        inMatch = {}
         channelId = message[2]
-        print "Channel %s has id %s" % (CHANNEL, channelId)
 
         for tup in message[8]:
             if tup[2] == 5:
-                # print 'Login: Player %s is in-game' % (tup[0],)
                 inMatch[tup[0]] = -1
             users[tup[1]] = tup[0]
 
-        recalculate(ircConn)
+        recalculate()
     elif message[0] == "HON_SC_LEFT_CHANNEL":
         if message[2] != channelId:
             continue
 
         if message[1] in users:
             del users[message[1]]
-        recalculate(ircConn)
+        recalculate()
     elif message[0] == "HON_STATUS_INGAME":
         if message[1] != channelId:
             continue
 
         users[message[3]] = message[2]
-        recalculate(ircConn)
+        recalculate()
     elif message[0] == "HON_STATUS_ONLINE":
         uid = sender[1]
         chid = sender[2]
         if chid != channelId:
             continue
 
-        ircMsg(ircConn, "<%s> %s" % (users.get(uid, '???'), message[1]))
-        print "<%s> %s" % (users.get(uid, '???'), message[1])
+        ircMsg("<%s> %s" % (users.get(uid, '???'), message[1]))
     elif message[0] == "HON_SC_UPDATE_STATUS":
-        # u'HON_SC_UPDATE_STATUS', 7719439, 5, 128, 0, u'', u'', u'white', u'Default Icon', u'5.153.24.250:11245', u'TMM Match #122447668', 122447668
         if message[1] not in users:
             continue
         username = users[message[1]]
@@ -126,15 +138,11 @@ while True:
         if len(message) >= 11:
             print "Player %s entered game #%s" % (username, message[11])
             inMatch[username] = message[11]
-            recalculate(ircConn)
-        elif len(message) >= 10:
-            print "Player %s entering server %s" % (username, message[9])
+            recalculate()
         else:
             if username in inMatch:
                 print "Player %s not in game" % (username,)
                 del inMatch[username]
-                recalculate(ircConn)
-    elif message[0] in UNINTERESTING:
-        pass
+                recalculate()
     else:
         print message
