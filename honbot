@@ -164,9 +164,19 @@ def main(argv=None):
    # @@ ignore SIGHUP
    for config_module in config_modules: 
       run(config_module) # @@ thread this
+      print "main loop ended: %s"  % (config_module,)
 
 if __name__ == '__main__': 
-   abspath = os.path.abspath(__file__)
-   dname = os.path.dirname(abspath)
-   os.chdir(dname)
-   main()
+    try:
+        abspath = os.path.abspath(__file__)
+        dname = os.path.dirname(abspath)
+        os.chdir(dname)
+        main()
+        print "*** MAIN RETURNING"
+    except SystemExit as e:
+        print "WTF?"
+        traceback.print_exc()
+        raise
+    except Exception as e:
+        traceback.print_exc()
+        raise

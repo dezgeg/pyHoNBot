@@ -9,8 +9,19 @@ import irc
 import irc.client
 IRC_CHAN = '#tkt-hon'
 
+channelId = None
+honSock = None
+
 q = queue.Queue()
 class HonIrcBot(irc.client.SimpleIRCClient):
+    def on_pubmsg(self, connection, event):
+        global channelId
+        if not channelId:
+            print "EVERYTHING IS BROKEN, RESTART"
+        else:
+            sender = event.source.split('!')[0]
+            honSock.send(json.dumps(['chat', channelId, sender, event.arguments[0]]))
+
     def on_join(self, connection, event):
         q.put('connected')
 
@@ -28,7 +39,7 @@ def handler(connection, event):
 ircBot = HonIrcBot()
 ircBot.ircobj.add_global_handler('all_raw_messages', handler, 0)
 print "Connecting..."
-ircBot.connect('irc.cs.hut.fi', 6667, 'NavettaBot-')
+ircBot.connect('irc.cs.hut.fi', 6667, 'NavettaBot')
 ircConn = ircBot.connection
 
 def ircMsg(msg):
@@ -54,11 +65,14 @@ sock = context.socket(zmq.SUB)
 sock.setsockopt(zmq.SUBSCRIBE, '')
 sock.connect('tcp://127.0.0.1:25892')
 
+context = zmq.Context()
+honSock = context.socket(zmq.PUB)
+honSock.bind('tcp://127.0.0.1:25893')
+
 CHANNEL = 'tkt'
 
 users = {}
 inMatch = {}
-channelId = None
 
 latestStatusMsg = None
 def timerFunc():
