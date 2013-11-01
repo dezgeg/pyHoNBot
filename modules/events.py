@@ -16,6 +16,8 @@ def commandThread():
             msg = '<%s> %s' % (message[2], message[3])
             print message
             bot.write_packet(hon.packets.ID.HON_CS_CHANNEL_MSG, msg, message[1])
+        elif message[0] == 'privmsg':
+            bot.write_packet(hon.packets.ID.HON_CS_WHISPER, message[1], message[2])
         else:
             print message
 

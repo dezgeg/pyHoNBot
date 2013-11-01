@@ -110,6 +110,7 @@ class ID:
     HON_SC_TMM_GROUP_JOIN = 0xC0E
     HON_SC_TMM_GROUP_CHANGE = 0xD03
     HON_SC_MONITOR = 0x00B5
+    HON_SC_GAME_INVITE = 0xC0D
 
 
 FILTER=''.join([(len(repr(chr(x)))==3) and chr(x) or '.' for x in range(256)])
@@ -244,6 +245,7 @@ sc_structs = {
         ID.HON_SC_CHANNEL_PROMOTE : 'III',
         ID.HON_SC_CHANNEL_DEMOTE : 'III',
         ID.HON_SC_MONITOR : 'ssscccssss' + 's' * 10,
+        ID.HON_SC_GAME_INVITE : 'sIBBss' + 'sBss', # nick,id,status,flags,chatsymbol,shield,icon  | map, playercount, mode, server
         }
 def pack(packet_id, *args):
     args = list(args)

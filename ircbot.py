@@ -158,5 +158,7 @@ while True:
                 print "Player %s not in game" % (username,)
                 del inMatch[username]
                 recalculate()
+    elif message[0] == "HON_SC_GAME_INVITE":
+        honSock.send(json.dumps(['privmsg', message[1], "Don't bother inviting me, I'm a bot!"]))
     else:
         print message
