@@ -1,3 +1,8 @@
+# HoN IRC bridge:
+
+See modules/events.py and ircbot.py.
+
+# Original pyHonBot README:
 quickstart for windows users:
 download and install python version 2.7.4 ( http://python.org/download )
 download latest code: https://github.com/theli-ua/pyHoNBot/zipball/master
